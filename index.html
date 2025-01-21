@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selenite Optimized</title>
+    <link href="https://fonts.cdnfonts.com/css/prompt" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3415518411898563" crossorigin="anonymous"></script>
+    <style>
+        * {
+            transition-duration: 0.5s;
+            outline: none;
+            border: none;
+            box-sizing: border-box;
+            align-content: center;
+            text-align: center;
+            font-family: 'Prompt', sans-serif;
+            color: var(--textcolor);
+        }
+        body {
+            font-family: Arial, sans-serif;
+            --inputbg: #3c096c;
+            --inputborder: #5a189a;
+            --uibg: #240046;
+            --textcolor: #fff;
+            --bg: #10002b;
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--textcolor);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .game {
+            width: 15%;
+            border-radius: 20px;
+            display: inline-block;
+            background-color: var(--uibg);
+            margin: 15px;
+            cursor: pointer;
+            box-shadow: 0px 0px 5px 5px var(--uibg);
+            transition: 0.3s;
+        }
+        .game:hover {
+            transform: scale(1.05);
+        }
+        .game h1 {
+            font-size: 0.85em;
+            color: white;
+        }
+        .game img, .suggest img {
+            width: 100%;
+            border-radius: 20px;
+            aspect-ratio: 1 / 1;
+        }
+        iframe {
+            width: 100%;
+            height: 95%;
+        }
+        #title {
+            height: 5%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Back_Arrow.svg" style="cursor: pointer;" id="backarrow" onclick="exitGame()" alt="Back">
+        <span id="gametitle"></span>
+    </div>
+    <center>
+        <h1>Selenite Optimized</h1>
+        <div id="games"></div>
+    </center>
+    <script>
+        let currentver = "v1.0.1";
+        let cdnurl;
+
+        $(document).ready(function () {
+            getCDN();
+
+            $(document).on("click", ".game", function () {
+                redirectGame($(this).attr("id"), $(this).find("h1").text());
+            });
+        });
+
+        function loadGames() {
+            $("#backarrow").hide();
+            $.getJSON(cdnurl + "./data/games.json", function (data) {
+                data.forEach(game => {
+                    const $element = $("<div>").addClass("game").prop({
+                        id: game.directory,
+                        style: "cursor: pointer;"
+                    })
+                    .append($("<img>").prop({
+                        src: `${cdnurl}/semag/${game.directory}/${game.image}`,
+                        alt: `${game.name} logo`
+                    }))
+                    .append($("<h1>").text(game.name));
+
+                    $("#games").append($element);
+                });
+            });
+        }
+
+        function redirectGame(dir, title) {
+            const iframe = document.createElement("iframe");
+            $("#games").hide();
+            $("#backarrow").show();
+            $("#gametitle").show().text(title);
+            iframe.src = `${cdnurl}/semag/${dir}/index.html`;
+            document.body.appendChild(iframe);
+        }
+
+        function exitGame() {
+            $("iframe").remove();
+            $("#backarrow").hide();
+            $("#gametitle").hide();
+            $("#games").show();
+        }
+
+        async function getCDN() {
+            checkVer();
+            $.getJSON("https://raw.githubusercontent.com/skysthelimitt/selenite-optimized/main/links.json", async function (data) {
+                for (const url of data.urls) {
+                    const response = await fetch(`${url}/README.md`);
+                    const text = await response.text();
+                    if (text.startsWith("## Selenite")) {
+                        console.log("CDN Found: " + url);
+                        cdnurl = url;
+                        loadGames();
+                        break;
+                    } else {
+                        console.log("CDN Blocked: " + url);
+                    }
+                }
+                if (!cdnurl) {
+                    alert("None of the CDNs are available. Please check again later.");
+                }
+            });
+        }
+
+        async function checkVer() {
+            const response = await fetch("https://raw.githubusercontent.com/skysthelimitt/selenite-optimized/main/ver");
+            const ver = await response.text();
+            if (!ver.startsWith(currentver)) {
+                if (confirm("Your Selenite Optimized version is out of date. Click OK to update or Cancel to continue.")) {
+                    window.location.replace("https://raw.githubusercontent.com/skysthelimitt/selenite-optimized/main/build/bookmark.txt");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
